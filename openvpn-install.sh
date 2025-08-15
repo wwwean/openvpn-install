@@ -2,7 +2,7 @@
 # shellcheck disable=SC1091,SC2164,SC2034,SC1072,SC1073,SC1009
 
 # Secure OpenVPN server installer for Debian, Ubuntu, CentOS, Amazon Linux 2, Fedora, Oracle Linux 8, Arch Linux, Rocky Linux and AlmaLinux.
-# https://github.com/angristan/openvpn-install
+# https://github.com/wwwean/openvpn-install
 
 function isRoot() {
 	if [ "$EUID" -ne 0 ]; then
@@ -260,7 +260,7 @@ function resolvePublicIP() {
 
 function installQuestions() {
 	echo "Welcome to the OpenVPN installer!"
-	echo "The git repository is available at: https://github.com/angristan/openvpn-install"
+	echo "The git repository is available at: https://github.com/wwwean/openvpn-install"
 	echo ""
 
 	echo "I need to ask you a few questions before starting the setup."
@@ -429,7 +429,7 @@ function installQuestions() {
 	echo "Do you want to customize encryption settings?"
 	echo "Unless you know what you're doing, you should stick with the default parameters provided by the script."
 	echo "Note that whatever you choose, all the choices presented in the script are safe (unlike OpenVPN's defaults)."
-	echo "See https://github.com/angristan/openvpn-install#security-and-encryption to learn more."
+	echo "See https://github.com/wwwean/openvpn-install#security-and-encryption to learn more."
 	echo ""
 	until [[ $CUSTOMIZE_ENC =~ (y|n) ]]; do
 		read -rp "Customize encryption settings? [y/n]: " -e -i n CUSTOMIZE_ENC
@@ -745,7 +745,7 @@ function installOpenVPN() {
 
 	# Install the latest version of easy-rsa from source, if not already installed.
 	if [[ ! -d /etc/openvpn/easy-rsa/ ]]; then
-		local version="3.1.2"
+		local version="3.2.3"
 		wget -O ~/easy-rsa.tgz https://github.com/OpenVPN/easy-rsa/releases/download/v${version}/EasyRSA-${version}.tgz
 		mkdir -p /etc/openvpn/easy-rsa
 		tar xzf ~/easy-rsa.tgz --strip-components=1 --no-same-owner --directory /etc/openvpn/easy-rsa
@@ -783,11 +783,11 @@ function installOpenVPN() {
 		case $TLS_SIG in
 		1)
 			# Generate tls-crypt key
-			openvpn --genkey --secret /etc/openvpn/tls-crypt.key
+			openvpn --genkey secret /etc/openvpn/tls-crypt.key
 			;;
 		2)
 			# Generate tls-auth key
-			openvpn --genkey --secret /etc/openvpn/tls-auth.key
+			openvpn --genkey secret /etc/openvpn/tls-auth.key
 			;;
 		esac
 	else
@@ -1038,9 +1038,9 @@ ip6tables -D INPUT -i $NIC -p $PROTOCOL --dport $PORT -j ACCEPT" >>/etc/iptables
 
 	# Handle the rules via a systemd script
 	echo "[Unit]
-Description=iptables rules for OpenVPN
-Before=network-online.target
-Wants=network-online.target
+Description=Firewall rules for OpenVPN
+After=openvpn@server.service
+BindsTo=openvpn@server.service
 
 [Service]
 Type=oneshot
@@ -1049,12 +1049,12 @@ ExecStop=/etc/iptables/rm-openvpn-rules.sh
 RemainAfterExit=yes
 
 [Install]
-WantedBy=multi-user.target" >/etc/systemd/system/iptables-openvpn.service
+WantedBy=openvpn@server.service" >/etc/systemd/system/firewall-openvpn.service
 
 	# Enable service and apply rules
 	systemctl daemon-reload
-	systemctl enable iptables-openvpn
-	systemctl start iptables-openvpn
+	systemctl enable firewall-openvpn
+	systemctl start firewall-openvpn
 
 	# If the server is behind a NAT, use the correct IP address for the clients to connect to
 	if [[ $ENDPOINT != "" ]]; then
@@ -1290,10 +1290,10 @@ function removeOpenVPN() {
 		fi
 
 		# Remove the iptables rules related to the script
-		systemctl stop iptables-openvpn
+		systemctl stop firewall-openvpn
 		# Cleanup
-		systemctl disable iptables-openvpn
-		rm /etc/systemd/system/iptables-openvpn.service
+		systemctl disable firewall-openvpn
+		rm /etc/systemd/system/firewall-openvpn.service
 		systemctl daemon-reload
 		rm /etc/iptables/add-openvpn-rules.sh
 		rm /etc/iptables/rm-openvpn-rules.sh
@@ -1343,7 +1343,7 @@ function removeOpenVPN() {
 
 function manageMenu() {
 	echo "Welcome to OpenVPN-install!"
-	echo "The git repository is available at: https://github.com/angristan/openvpn-install"
+	echo "The git repository is available at: https://github.com/wwwean/openvpn-install"
 	echo ""
 	echo "It looks like OpenVPN is already installed."
 	echo ""
