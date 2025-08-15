@@ -34,7 +34,7 @@ graph LR
 First, get the script and make it executable:
 
 ```bash
-curl -O https://raw.githubusercontent.com/angristan/openvpn-install/master/openvpn-install.sh
+curl -O https://raw.githubusercontent.com/wwwean/openvpn-install/master/openvpn-install.sh
 chmod +x openvpn-install.sh
 ```
 
@@ -156,7 +156,7 @@ To be noted:
 
 ## Fork
 
-This script is based on the great work of [Nyr and its contributors](https://github.com/Nyr/openvpn-install).
+This script is based on the great work of [Nyr, Stanislas (angristan) and its contributors](https://github.com/Nyr/openvpn-install, https://github.com/angristan/openvpn-install).
 
 Since 2016, the two scripts have diverged and are not alike anymore, especially under the hood. The main goal of the script was enhanced security. But since then, the script has been completely rewritten and a lot a features have been added. The script is only compatible with recent distributions though, so if you need to use a very old server or client, I advise using Nyr's script.
 
